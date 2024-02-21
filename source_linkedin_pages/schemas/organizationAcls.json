@@ -1,0 +1,19 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "additionalProperties" : true,
+  "properties" : {
+    "state" : {
+      "type" : ["null", "string"]
+    },
+    "role" : {
+      "type" : ["null", "string"]
+    },
+    "roleAssignee" : {
+      "type" : ["null", "string"]
+    },
+    "organizationTarget" : {
+      "type" : ["null", "string"]
+    }
+  }
+}

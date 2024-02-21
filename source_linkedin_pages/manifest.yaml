@@ -1,0 +1,246 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  authenticator:
+    type: "OAuthAuthenticator"
+    token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api.linkedin.com/rest/"
+    http_method: "GET"
+    authenticator:
+      "$ref": "#/definitions/authenticator"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  organization_lookup:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "organization_lookup"
+      path: "organizations/{{ config['org_id'] }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+
+  follower_statistics:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "follower_statistics"
+      path: "organizationalEntityFollowerStatistics"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["elements"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+        request_parameters:
+          q: organizationalEntity
+          organizationalEntity: "urn:li:organization:{{ config['org_id'] }}"
+
+  share_statistics:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "share_statistics"
+      path: "organizationalEntityShareStatistics"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["elements"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+        request_parameters:
+          q: organizationalEntity
+          organizationalEntity: "urn:li:organization:{{ config['org_id'] }}"
+
+  total_follower_count:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "total_follower_count"
+      path: "networkSizes/urn:li:organization:{{ config['org_id'] }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+        request_parameters:
+          edgeType: CompanyFollowedByMember
+
+  organizationAcls:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "organizationAcls"
+      path: "organizationAcls"
+      primary_key: "roleAssignee"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: [ "elements" ]
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          X-Restli-Protocol-Version: "2.0.0"
+          LinkedIn-Version: "202311"
+        request_parameters:
+          q: organization
+          organization: "urn:li:organization:{{ config['org_id'] }}"
+
+  posts:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "posts"
+      path: "posts"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: [ "elements" ]
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          X-Restli-Protocol-Version: "2.0.0"
+          LinkedIn-Version: "202311"
+        request_parameters:
+          q: author
+          author: "urn:li:organization:{{ config['org_id'] }}"
+          count: "100"
+          sortBy: LAST_MODIFIED
+
+  socialActions:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "socialActions"
+      path: "socialActions/{{ stream_slice.id }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: [ "elements" ]
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/posts"
+            parent_key: "id"
+            partition_field: "id"
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+
+  videos:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "videos"
+      path: "videos/{{ stream_slice.content.media.id }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/posts"
+            parent_key: "content.media.id"
+            partition_field: "content.media.id"
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+
+  images:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "images"
+      path: "images/{{ stream_slice.content.media.id }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/posts"
+            parent_key: "content.media.id"
+            partition_field: "content.media.id"
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+
+  organizationPageStatistics:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "organizationPageStatistics"
+      path: "organizationPageStatistics"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: [ "elements" ]
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          LinkedIn-Version: "202311"
+        request_parameters:
+          q: organization
+          organization: "urn:li:organization:{{ config['org_id'] }}"
+
+streams:
+  - "#/definitions/organization_lookup"
+  - "#/definitions/organizationPageStatistics"
+  - "#/definitions/organizationAcls"
+  - "#/definitions/follower_statistics"
+  - "#/definitions/share_statistics"
+  - "#/definitions/total_follower_count"
+  - "#/definitions/posts"
+
+check:
+  type: CheckStream
+  stream_names:
+  - "organizationPageStatistics"
+  - "organization_lookup"
+  - "organizationAcls"
+  - "follower_statistics"
+  - "share_statistics"
+  - "total_follower_count"
+  - "posts"

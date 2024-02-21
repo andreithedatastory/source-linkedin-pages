@@ -1,0 +1,16 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "additionalProperties" : true,
+  "properties" : {
+    "results" : {
+      "type" : ["null", "string"]
+    },
+    "statuses" : {
+      "type" : ["null", "string"]
+    },
+    "errors" : {
+      "type" : ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "additionalProperties" : true,
+  "properties" : {
+    "lifecycleState" : {
+      "type" : ["null", "string"]
+    },
+    "lastModifiedAt" : {
+      "type" : ["null", "integer"]
+    },
+    "visibility" : {
+      "type" : ["null", "string"]
+    },
+    "publishedAt" : {
+      "type" : ["null", "integer"]
+    },
+    "author" : {
+      "type" : ["null", "string"]
+    },
+    "distribution" : {
+      "type" : ["null", "object"],
+      "properties" : {
+        "feedDistribution" : {
+          "type" : ["null", "string"]
+        },
+        "thirdPartyDistributionChannels" : {
+          "type" : ["null", "array"]
+        }
+      }
+    },
+    "content" : {
+      "type" : ["null", "object"]
+    },
+    "lifecycleStateInfo" : {
+      "type" : ["null", "object"],
+      "properties" : {
+        "isEditedByAuthor" : {
+          "type" : ["null", "boolean"]
+        }
+      }
+    },
+    "isReshareDisabledByAuthor" : {
+      "type" : ["null", "boolean"]
+    },
+    "createdAt" : {
+      "type" : ["null", "integer"]
+    },
+    "id" : {
+      "type" : ["null", "string"]
+    },
+    "commentary" : {
+      "type" : ["null", "string"]
+    }
+  }
+}

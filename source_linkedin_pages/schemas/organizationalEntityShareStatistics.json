@@ -1,0 +1,36 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "additionalProperties" : true,
+  "properties" : {
+    "organizationalEntity" : {
+      "type" : ["null", "string"]
+    },
+    "ugcPost" : {
+      "type" : ["null", "string"]
+    },
+    "totalShareStatistics" : {
+      "type" : ["null", "object"],
+      "properties" : {
+        "clickCount" : {
+          "type" : ["null", "integer"]
+        },
+        "commentCount" : {
+          "type" : ["null", "integer"]
+        },
+        "engagement" : {
+          "type" : ["null", "number"]
+        },
+        "impressionCount" : {
+          "type" : ["null", "integer"]
+        },
+        "likeCount" : {
+          "type" : ["null", "integer"]
+        },
+        "shareCount" : {
+          "type" : ["null", "integer"]
+        }
+      }
+    }
+  }
+}
