@@ -231,7 +231,6 @@ streams:
   - "#/definitions/organizationAcls"
   - "#/definitions/follower_statistics"
   - "#/definitions/share_statistics"
-  - "#/definitions/total_follower_count"
   - "#/definitions/posts"
 
 check:
@@ -242,5 +241,4 @@ check:
   - "organizationAcls"
   - "follower_statistics"
   - "share_statistics"
-  - "total_follower_count"
   - "posts"
